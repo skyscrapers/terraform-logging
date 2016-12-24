@@ -1,8 +1,8 @@
-resource "aws_cloudtrail" "cloudtrail" {
-    name = "${var.project}-${var.environment}"
-    s3_bucket_name = "${var.bucket_name}"
-    s3_key_prefix = "prefix"
-    include_global_service_events = true
+module "cloudtrail"{
+  source                   = "../cloudtrail"
+  bucket_name              = "ocs-cloudtrail-log"
+  project                  = "${var.project}"
+  environment              = "${var.environment}"
 }
 
 resource "aws_s3_bucket" "bucket" {

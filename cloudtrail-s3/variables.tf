@@ -6,7 +6,7 @@ variable "allowed_bucket_dist" {
   description = "the list of arns of bucket directories allowed ex:   arn:aws:s3:::ocs-cloudtrail-log/AWSLogs/1234567890/* "
 }
 variable "include_global_service_events" {
-  default = false
+  default = true
 }
 variable "project" {
   description = "Project name to use"
@@ -28,4 +28,7 @@ variable "versioning_enabled" {
 
 variable "expired_object_delete_marker" {
   default = false
+}
+variable "is_multi_region_trail" {
+  default = true
 }
