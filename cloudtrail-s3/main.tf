@@ -1,34 +1,35 @@
-module "cloudtrail"{
-  source                   = "../cloudtrail"
-  bucket_name              = "${var.bucket_name}"
-  project                  = "${var.project}"
-  environment              = "${var.environment}"
+module "cloudtrail" {
+  source                        = "../cloudtrail"
+  bucket_name                   = "${var.bucket_name}"
+  project                       = "${var.project}"
+  environment                   = "${var.environment}"
   include_global_service_events = "${var.include_global_service_events}"
-  is_multi_region_trail = "${var.is_multi_region_trail}"
+  is_multi_region_trail         = "${var.is_multi_region_trail}"
 }
 
 resource "aws_s3_bucket" "bucket" {
-    bucket = "${var.bucket_name}"
-    acl    = "private"
+  bucket = "${var.bucket_name}"
+  acl    = "private"
 
-    versioning {
-      enabled = "${var.versioning_enabled}"
+  versioning {
+    enabled = "${var.versioning_enabled}"
+  }
+
+  lifecycle_rule {
+    id      = "expire"
+    prefix  = "/"
+    enabled = "${var.lifecycle_expire_enabled}"
+
+    expiration {
+      days = "${var.lifecycle_expire_days}"
     }
+  }
 
-    lifecycle_rule {
-      id      = "expire"
-      prefix  = "/"
-      enabled = "${var.lifecycle_expire_enabled}"
+  tags {
+    Name = "${var.bucket_name}"
+  }
 
-      expiration {
-        days = "${var.lifecycle_expire_days}"
-      }
-    }
-
-    tags {
-      Name = "${var.bucket_name}"
-    }
-    policy = <<POLICY
+  policy = <<POLICY
 {
 	"Version": "2012-10-17",
 	"Id": "PutObjPolicy",
