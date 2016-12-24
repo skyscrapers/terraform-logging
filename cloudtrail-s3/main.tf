@@ -1,8 +1,10 @@
 module "cloudtrail"{
   source                   = "../cloudtrail"
-  bucket_name              = "ocs-cloudtrail-log"
+  bucket_name              = "${var.bucket_name}"
   project                  = "${var.project}"
   environment              = "${var.environment}"
+  include_global_service_events = "${var.include_global_service_events}"
+  is_multi_region_trail = "${var.is_multi_region_trail}"
 }
 
 resource "aws_s3_bucket" "bucket" {
