@@ -68,7 +68,6 @@ Module to ship AWS Cloudwatch logs to AWS Elasticsearch. This assumes that your 
 ```
 module "cwlogs-to-es" {
   source               = "github.com/skyscrapers/terraform-logging/cwlogs-to-es"
-  #elasticsearch_sg_id = "${module.logs.sg_id}"
   elasticsearch_sg_id  ="sg-224234c"
   elasticsearch_dns    = "${module.logs.endpoint}"
   environment          = "${terraform.workspace}"
