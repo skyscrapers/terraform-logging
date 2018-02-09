@@ -7,10 +7,10 @@ data "template_file" "node" {
 }
 
 data "archive_file" "zip" {
-  type        = "zip"
-  source_content = "${data.template_file.node.rendered}"
+  type                    = "zip"
+  source_content          = "${data.template_file.node.rendered}"
   source_content_filename = "index.js"
-  output_path = "cw_logs_es.zip"
+  output_path             = "cw_logs_es.zip"
 }
 
 resource "aws_lambda_function" "lambda" {
@@ -26,8 +26,8 @@ resource "aws_lambda_function" "lambda" {
   timeout = "60"
 
   vpc_config {
-      subnet_ids = ["${var.subnet_ids}"]
-      security_group_ids = ["${aws_security_group.lambda.id}"]
+    subnet_ids         = ["${var.subnet_ids}"]
+    security_group_ids = ["${aws_security_group.lambda.id}"]
   }
 }
 
@@ -38,14 +38,14 @@ data "aws_region" "current" {
 data "aws_caller_identity" "current" {}
 
 locals {
-    aws_region = "${var.aws_region != "" ? var.aws_region : data.aws_region.current.name}"
-    aws_account_id = "${var.aws_account_id != "" ? var.aws_account_id : data.aws_caller_identity.current.account_id}"
+  aws_region     = "${var.aws_region != "" ? var.aws_region : data.aws_region.current.name}"
+  aws_account_id = "${var.aws_account_id != "" ? var.aws_account_id : data.aws_caller_identity.current.account_id}"
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch" {
-  statement_id   = "AllowExecutionFromCloudWatch${var.environment}"
-  action         = "lambda:InvokeFunction"
-  function_name  = "${aws_lambda_function.lambda.function_name}"
-  principal      = "logs.amazonaws.com"
-  source_arn     = "arn:aws:logs:${local.aws_region}:${local.aws_account_id}:log-group:${var.log_group_name}:*"
+  statement_id  = "AllowExecutionFromCloudWatch${var.environment}"
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.lambda.function_name}"
+  principal     = "logs.amazonaws.com"
+  source_arn    = "arn:aws:logs:${local.aws_region}:${local.aws_account_id}:log-group:${var.log_group_name}:*"
 }

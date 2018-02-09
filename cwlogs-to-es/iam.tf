@@ -18,8 +18,8 @@ resource "aws_iam_role" "iam_for_lambda" {
 }
 
 resource "aws_iam_role_policy_attachment" "vpc-execution" {
-    role       = "${aws_iam_role.iam_for_lambda.name}"
-    policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+  role       = "${aws_iam_role.iam_for_lambda.name}"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
 resource "aws_iam_role_policy" "cwlogs-es" {
@@ -34,7 +34,7 @@ data "aws_iam_policy_document" "cwlogs-es" {
     actions = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
-      "logs:PutLogEvents"
+      "logs:PutLogEvents",
     ]
 
     resources = [
