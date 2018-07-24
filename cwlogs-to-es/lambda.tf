@@ -22,7 +22,7 @@ resource "aws_lambda_function" "lambda" {
 
   role    = "${aws_iam_role.iam_for_lambda.arn}"
   handler = "index.handler"
-  runtime = "nodejs4.3"
+  runtime = "nodejs8.10"
   timeout = "60"
 
   vpc_config {
