@@ -67,6 +67,13 @@ function transform(payload) {
         ].join('.');
 
         var source = buildSource(logEvent.message, logEvent.extractedFields);
+        source["log_json"]={}
+        if(source["log"]){
+            var jsonSubString = extractJson(source["log"]);
+            if (jsonSubString !== null) {
+                source["log_json"]= JSON.parse(jsonSubString);
+            }
+        }
         source['@id'] = logEvent.id;
         source['@timestamp'] = new Date(1 * logEvent.timestamp).toISOString();
         source['@message'] = logEvent.message;
