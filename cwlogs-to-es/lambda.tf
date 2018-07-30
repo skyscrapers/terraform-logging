@@ -3,6 +3,7 @@ data "template_file" "node" {
 
   vars {
     elasticsearch_dns = "${var.elasticsearch_dns}"
+    index_prefix      = "${var.index_prefix}"
   }
 }
 
