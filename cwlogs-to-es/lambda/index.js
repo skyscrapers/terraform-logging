@@ -4,6 +4,7 @@ var zlib = require('zlib');
 var crypto = require('crypto');
 
 var endpoint = '${elasticsearch_dns}';
+var index_prefix = '${index_prefix}'
 
 exports.handler = function(input, context) {
     // decode input from base64
@@ -61,7 +62,7 @@ function transform(payload) {
 
         // index name format: cwl-YYYY.MM.DD
         var indexName = [
-            'cwl-' + timestamp.getUTCFullYear(), // year
+            index_prefix + '-' + timestamp.getUTCFullYear(), // year
             ('0' + (timestamp.getUTCMonth() + 1)).slice(-2), // month
             ('0' + timestamp.getUTCDate()).slice(-2) // day
         ].join('.');

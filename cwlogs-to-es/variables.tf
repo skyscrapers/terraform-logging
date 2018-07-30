@@ -28,3 +28,7 @@ variable "aws_region" {
   description = "AWS region where you have your AWS cloudwtach loggroup deployed in. Defaults to your current region"
   default     = ""
 }
+
+variable "index_prefix" {
+  default = "cwl"
+}
