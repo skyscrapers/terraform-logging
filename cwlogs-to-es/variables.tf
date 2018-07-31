@@ -32,3 +32,7 @@ variable "aws_region" {
 variable "index_prefix" {
   default = "cwl"
 }
+
+variable "retention_in_days" {
+  default = 30
+}
