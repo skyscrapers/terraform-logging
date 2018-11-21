@@ -1,12 +1,3 @@
-variable "bucket_name" {
-  description = "the name of the cloudtrail bucket"
-}
-
-variable "allowed_bucket_dist" {
-  type        = "string"
-  description = "the list of arns of bucket directories allowed ex:   arn:aws:s3:::ocs-cloudtrail-log/AWSLogs/1234567890/* "
-}
-
 variable "include_global_service_events" {
   description = "Specifies whether the trail is publishing events from global services such as IAM to the log files"
   default     = true

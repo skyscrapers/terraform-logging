@@ -8,7 +8,11 @@ This modules allows to setup cloudtrail passing an existing s3 bucket
 
 ### Variables
 
-See the [cloudtrail/variables.tf](cloudtrail/variables.tf) file.
+* [`bucket_name`]: String(required): the name of the cloudtrail bucket
+* [`project`]: String(required): Project name to use
+* [`environment`]: String(required): Environment to deploy on
+* [`include_global_service_events`]: Boolean(optional): Specifies whether the trail is publishing events from global services such as IAM to the log files. (default: true)
+* [`is_multi_region_trail`]: Boolean(optional): Specifies whether the trail is created in the current region or in all regions. (default: true)
 
 ### Outputs
 
@@ -32,7 +36,13 @@ Terraform module to setup the cloudtrail s3 bucket and enable cloudtrail
 
 ### Variables
 
-See the [cloudtrail-s3/variables.tf](cloudtrail-s3/variables.tf) file.
+* [`project`]: String(required): Project name to use
+* [`environment`]: String(required): Environment to deploy on
+* [`lifecycle_expire_enabled`]: String(required)
+* [`versioning_enabled`]: String(required)
+* [`include_global_service_events`]: Boolean(optional): Specifies whether the trail is publishing events from global services such as IAM to the log files. (default: true)
+* [`expired_object_delete_marker`]: String(optional) On a versioned bucket (versioning-enabled or versioning-suspended bucket), you can add this element in the lifecycle configuration to direct Amazon S3 to delete expired object delete markers. (default: false)
+* [`is_multi_region_trail`]: Boolean(optional): Specifies whether the trail is created in the current region or in all regions. (default: true)
 
 ### Outputs
 
@@ -43,15 +53,10 @@ See the [cloudtrail-s3/variables.tf](cloudtrail-s3/variables.tf) file.
 ```hcl
 module "cloudtrail-s3" {
   source                   = "github.com/skyscrapers/terraform-logging/cloudtrail-s3"
-  bucket_name              = "test-cloudtrail-log"
   lifecycle_expire_enabled = true
   lifecycle_expire_days    = "365"
   project                  = "${var.project}"
   environment              = "${var.environment}"
-  allowed_bucket_dist      = <<EOF
-  "arn:aws:s3:::"test-cloudtrail-log/AWSLogs/12345678903/*",
-  "arn:aws:s3:::"test-cloudtrail-log/AWSLogs/12345678901/*",
-EOF
 }
 ```
 
