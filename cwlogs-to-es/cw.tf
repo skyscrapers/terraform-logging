@@ -10,3 +10,16 @@ resource "aws_cloudwatch_log_group" "lambda" {
 
   retention_in_days = "${var.retention_in_days}"
 }
+
+resource "aws_cloudwatch_log_metric_filter" "es_index_errors" {
+  name           = "ElasticSearchIndexErrors"
+  pattern        = "{ $.error EXISTS }"
+  log_group_name = "${aws_cloudwatch_log_group.lambda.name}"
+
+  metric_transformation {
+    name          = "ElasticSearchIndexErrors"
+    namespace     = "LogMetrics"
+    value         = "1"
+    default_value = "0"
+  }
+}
