@@ -6,13 +6,16 @@ var crypto = require('crypto');
 var endpoint = '${elasticsearch_dns}';
 var index_prefix = '${index_prefix}'
 
-exports.handler = function(input, context) {
+exports.handler = function (input, context, callback) {
     // decode input from base64
     var zippedInput = new Buffer(input.awslogs.data, 'base64');
 
     // decompress the input
-    zlib.gunzip(zippedInput, function(error, buffer) {
-        if (error) { context.fail(error); return; }
+    zlib.gunzip(zippedInput, function (error, buffer) {
+        if (error) {
+            console.error(JSON.stringify(error));
+            return callback(error);
+        }
 
         // parse the input from JSON
         var awslogsData = JSON.parse(buffer.toString('utf8'));
@@ -22,29 +25,18 @@ exports.handler = function(input, context) {
 
         // skip control messages
         if (!elasticsearchBulkData) {
-            console.log('Received a control message');
-            context.succeed('Control message handled successfully');
-            return;
+            console.log(JSON.stringify({ message: 'Ignoring control message' }));
+            return callback();
         }
 
         // post documents to the Amazon Elasticsearch Service
-        post(elasticsearchBulkData, function(error, success, statusCode, failedItems) {
-            console.log('Response: ' + JSON.stringify({
-                "statusCode": statusCode
-            }));
-
+        post(elasticsearchBulkData, function (error, result, statusCode) {
             if (error) {
-                console.log('Error: ' + JSON.stringify(error, null, 2));
-
-                if (failedItems && failedItems.length > 0) {
-                    console.log("Failed Items: " +
-                        JSON.stringify(failedItems, null, 2));
-                }
-
-                context.fail(JSON.stringify(error));
+                console.error(JSON.stringify({ error: error, statusCode: statusCode, result: result }));
+                callback(error);
             } else {
-                console.log('Success: ' + JSON.stringify(success));
-                context.succeed('Success');
+                console.log(JSON.stringify({ statusCode: statusCode, result: result }));
+                callback();
             }
         });
     });
@@ -57,7 +49,7 @@ function transform(payload) {
 
     var bulkRequestBody = '';
 
-    payload.logEvents.forEach(function(logEvent) {
+    payload.logEvents.forEach(function (logEvent) {
         var timestamp = new Date(1 * logEvent.timestamp);
 
         // index name format: cwl-YYYY.MM.DD
@@ -68,11 +60,11 @@ function transform(payload) {
         ].join('.');
 
         var source = buildSource(logEvent.message, logEvent.extractedFields);
-        source["log_json"]={}
-        if(source["log"]){
+        source["log_json"] = {}
+        if (source["log"]) {
             var jsonSubString = extractJson(source["log"]);
             if (jsonSubString !== null) {
-                source["log_json"]= JSON.parse(jsonSubString);
+                source["log_json"] = JSON.parse(jsonSubString);
             }
         }
         source['@id'] = logEvent.id;
@@ -108,7 +100,7 @@ function buildSource(message, extractedFields) {
                     continue;
                 }
 
-                jsonSubString = extractJson(value);
+                var jsonSubString = extractJson(value);
                 if (jsonSubString !== null) {
                     source['$' + key] = JSON.parse(jsonSubString);
                 }
@@ -119,7 +111,7 @@ function buildSource(message, extractedFields) {
         return source;
     }
 
-    jsonSubString = extractJson(message);
+    var jsonSubString = extractJson(message);
     if (jsonSubString !== null) {
         return JSON.parse(jsonSubString);
     }
@@ -148,36 +140,34 @@ function isNumeric(n) {
 function post(body, callback) {
     var requestParams = buildRequest(endpoint, body);
 
-    var request = https.request(requestParams, function(response) {
+    var request = https.request(requestParams, function (response) {
         var responseBody = '';
-        response.on('data', function(chunk) {
+        response.on('data', function (chunk) {
             responseBody += chunk;
         });
-        response.on('end', function() {
+        response.on('end', function () {
             var info = JSON.parse(responseBody);
-            var failedItems;
-            var success;
+            var failedItems = [];
+            var result = {};
 
             if (response.statusCode >= 200 && response.statusCode < 299) {
-                failedItems = info.items.filter(function(x) {
+                failedItems = info.items.filter(function (x) {
                     return x.index.status >= 300;
                 });
 
-                success = {
-                    "attemptedItems": info.items.length,
-                    "successfulItems": info.items.length - failedItems.length,
-                    "failedItems": failedItems.length
+                result = {
+                    attemptedItemsCount: info.items.length,
+                    successfulItemsCount: info.items.length - failedItems.length,
+                    failedItemsCount: failedItems.length,
+                    failedItems: failedItems
                 };
             }
 
-            var error = response.statusCode !== 200 || info.errors === true ? {
-                "statusCode": response.statusCode,
-                "responseBody": responseBody
-            } : null;
+            var error = response.statusCode !== 200 || info.errors === true ? info : null;
 
-            callback(error, success, response.statusCode, failedItems);
+            callback(error, result, response.statusCode);
         });
-    }).on('error', function(e) {
+    }).on('error', function (e) {
         callback(e);
     });
     request.end(requestParams.body);
@@ -209,12 +199,12 @@ function buildRequest(endpoint, body) {
     };
 
     var canonicalHeaders = Object.keys(request.headers)
-        .sort(function(a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1; })
-        .map(function(k) { return k.toLowerCase() + ':' + request.headers[k]; })
+        .sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1; })
+        .map(function (k) { return k.toLowerCase() + ':' + request.headers[k]; })
         .join('\n');
 
     var signedHeaders = Object.keys(request.headers)
-        .map(function(k) { return k.toLowerCase(); })
+        .map(function (k) { return k.toLowerCase(); })
         .sort()
         .join(';');
 
