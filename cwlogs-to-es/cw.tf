@@ -13,13 +13,13 @@ resource "aws_cloudwatch_log_group" "lambda" {
 
 resource "aws_cloudwatch_log_metric_filter" "es_index_errors" {
   name           = "ElasticSearchIndexErrors"
-  pattern        = "{ $.error EXISTS }"
+  pattern        = "{ $.result.failedItemsCount > 0 }"
   log_group_name = "${aws_cloudwatch_log_group.lambda.name}"
 
   metric_transformation {
     name          = "ElasticSearchIndexErrors"
     namespace     = "LogMetrics"
-    value         = "1"
+    value         = "$.result.failedItemsCount"
     default_value = "0"
   }
 }
