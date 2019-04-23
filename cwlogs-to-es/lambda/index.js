@@ -4,7 +4,7 @@ var zlib = require('zlib');
 var crypto = require('crypto');
 
 var endpoint = '${elasticsearch_dns}';
-var index_prefix = '${index_prefix}'
+var index_prefix = '${index_prefix}';
 
 exports.handler = function (input, context, callback) {
     // decode input from base64
