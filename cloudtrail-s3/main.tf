@@ -4,35 +4,35 @@ locals {
 
 module "cloudtrail" {
   source                        = "../cloudtrail"
-  bucket_name                   = "${local.bucket_name}"
-  project                       = "${var.project}"
-  environment                   = "${var.environment}"
-  include_global_service_events = "${var.include_global_service_events}"
-  is_multi_region_trail         = "${var.is_multi_region_trail}"
+  bucket_name                   = local.bucket_name
+  project                       = var.project
+  environment                   = var.environment
+  include_global_service_events = var.include_global_service_events
+  is_multi_region_trail         = var.is_multi_region_trail
 }
 
 resource "aws_s3_bucket" "bucket" {
-  bucket = "${local.bucket_name}"
+  bucket = local.bucket_name
   acl    = "private"
   versioning {
-    enabled = "${var.versioning_enabled}"
+    enabled = var.versioning_enabled
   }
 
   lifecycle_rule {
     id      = "expire"
     prefix  = "/"
-    enabled = "${var.lifecycle_expire_enabled}"
+    enabled = var.lifecycle_expire_enabled
 
     expiration {
-      days = "${var.lifecycle_expire_days}"
+      days = var.lifecycle_expire_days
     }
   }
 
-  tags {
-    Name = "${local.bucket_name}"
+  tags = {
+    Name = local.bucket_name
   }
 
-  policy = "${data.aws_iam_policy_document.s3_permissions.json}"
+  policy = data.aws_iam_policy_document.s3_permissions.json
 }
 
 data "aws_iam_policy_document" "s3_permissions" {
@@ -44,9 +44,9 @@ data "aws_iam_policy_document" "s3_permissions" {
       "arn:aws:s3:::${local.bucket_name}/*",
     ]
     principals {
-       type        = "*"
-       identifiers = ["*"]
-     }
+      type        = "*"
+      identifiers = ["*"]
+    }
     condition {
       test     = "StringNotEquals"
       variable = "s3:x-amz-server-side-encryption"
@@ -60,7 +60,7 @@ data "aws_iam_policy_document" "s3_permissions" {
   statement {
     actions = ["s3:GetBucketAcl"]
 
-    principals = {
+    principals {
       type        = "Service"
       identifiers = ["cloudtrail.amazonaws.com"]
     }
@@ -73,7 +73,7 @@ data "aws_iam_policy_document" "s3_permissions" {
   statement {
     actions = ["s3:PutObject"]
 
-    principals = {
+    principals {
       type        = "Service"
       identifiers = ["cloudtrail.amazonaws.com"]
     }
@@ -92,3 +92,4 @@ data "aws_iam_policy_document" "s3_permissions" {
     }
   }
 }
+
