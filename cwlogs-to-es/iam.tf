@@ -14,19 +14,19 @@ data "aws_iam_policy_document" "policy" {
 
 resource "aws_iam_role" "iam_for_lambda" {
   name               = "lambda_cwlogs_to_elasticsearch_${var.environment}"
-  assume_role_policy = "${data.aws_iam_policy_document.policy.json}"
+  assume_role_policy = data.aws_iam_policy_document.policy.json
 }
 
 resource "aws_iam_role_policy_attachment" "vpc-execution" {
-  role       = "${aws_iam_role.iam_for_lambda.name}"
+  role       = aws_iam_role.iam_for_lambda.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
 resource "aws_iam_role_policy" "cwlogs-es" {
   name = "lambda_cwlogs_to_elasticsearch_${var.environment}"
-  role = "${aws_iam_role.iam_for_lambda.id}"
+  role = aws_iam_role.iam_for_lambda.id
 
-  policy = "${data.aws_iam_policy_document.cwlogs-es.json}"
+  policy = data.aws_iam_policy_document.cwlogs-es.json
 }
 
 data "aws_iam_policy_document" "cwlogs-es" {
@@ -52,3 +52,4 @@ data "aws_iam_policy_document" "cwlogs-es" {
     ]
   }
 }
+
