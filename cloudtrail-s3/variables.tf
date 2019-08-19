@@ -21,7 +21,7 @@ variable "lifecycle_expire_enabled" {
 }
 
 variable "lifecycle_expire_days" {
-  default     = "365"
+  default     = 365
   description = "how many days lasts the file in the bucket"
   type        = number
 }
